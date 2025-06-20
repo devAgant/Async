@@ -19,6 +19,6 @@ public abstract class GoalSelectorMixin {
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void onInit(CallbackInfo ci) {
-        this.goals = ConcurrentCollections.newLinkedSet();
+        this.goals = ConcurrentCollections.newHashSet();
     }
 }
