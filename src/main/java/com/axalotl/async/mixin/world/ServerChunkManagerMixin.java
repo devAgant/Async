@@ -34,6 +34,33 @@ public abstract class ServerChunkManagerMixin extends ChunkManager {
     @Final
     public ThreadedAnvilChunkStorage threadedAnvilChunkStorage;
 
+    @Inject(method = "getChunk(IILnet/minecraft/world/chunk/ChunkStatus;Z)Lnet/minecraft/world/chunk/Chunk;", at = @At("HEAD"), cancellable = true)
+    private void shortcutGetChunk(int x, int z, ChunkStatus status, boolean create, CallbackInfoReturnable<Chunk> cir) {
+        if (Thread.currentThread() != this.serverThread) {
+            ChunkHolder holder = this.getChunkHolder(ChunkPos.toLong(x, z));
+            if (holder != null) {
+                Chunk chunk = holder.getWorldChunk();
+                if (chunk != null && chunk.getStatus().isAtLeast(status)) {
+                    cir.setReturnValue(chunk);
+                    return;
+                }
+            }
+        }
+    }
+
+    @Inject(method = "getWorldChunk", at = @At("HEAD"), cancellable = true)
+    private void shortcutGetWorldChunk(int chunkX, int chunkZ, CallbackInfoReturnable<WorldChunk> cir) {
+        if (Thread.currentThread() != this.serverThread) {
+            ChunkHolder holder = this.getChunkHolder(ChunkPos.toLong(chunkX, chunkZ));
+            if (holder != null) {
+                WorldChunk chunk = holder.getWorldChunk();
+                if (chunk != null) {
+                    cir.setReturnValue(chunk);
+                    return;
+                }
+            }
+        }
+    }
 
     @Redirect(method = "tickChunks", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/SpawnHelper;spawn(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/world/chunk/WorldChunk;Lnet/minecraft/world/SpawnHelper$Info;ZZZ)V"))
     private void tickChunks(ServerWorld world, WorldChunk worldChunk, SpawnHelper.Info info, boolean bl, boolean bl2, boolean bl3) {
