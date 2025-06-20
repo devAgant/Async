@@ -16,7 +16,6 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Util;
 import net.minecraft.util.crash.CrashReport;
 import net.minecraft.util.crash.CrashReportSection;
-import net.minecraft.util.crash.ReportType;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.SpawnHelper;
 import net.minecraft.world.chunk.WorldChunk;
@@ -30,7 +29,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import static net.minecraft.server.dedicated.DedicatedServerWatchdog.createCrashReport;
 
 public class ParallelProcessor {
     private static final Logger LOGGER = LogManager.getLogger(ParallelProcessor.class);
@@ -130,7 +128,7 @@ public class ParallelProcessor {
 
 
     private static boolean isPortalTickRequired(Entity entity) {
-        return entity.portalManager != null && entity.portalManager.isInPortal();
+        return false;
     }
 
     private static void tickSynchronously(Consumer<Entity> tickConsumer, Entity entity) {
@@ -153,15 +151,15 @@ public class ParallelProcessor {
     public static void asyncSpawn(ServerWorld world, WorldChunk worldChunk, SpawnHelper.Info info, List<SpawnGroup> spawnableGroups) {
         if (AsyncConfig.enableAsyncSpawn) {
             CompletableFuture<Void> future = CompletableFuture.runAsync(() ->
-                    SpawnHelper.spawn(world, worldChunk, info, spawnableGroups), tickPool
+                    SpawnHelper.spawn(world, worldChunk, info, true, true, true), tickPool
             ).exceptionally(e -> {
                 LOGGER.error("Error in async spawn tick, switching to synchronous", e);
-                SpawnHelper.spawn(world, worldChunk, info, spawnableGroups);
+                SpawnHelper.spawn(world, worldChunk, info, true, true, true);
                 return null;
             });
             taskQueue.add(future);
         } else {
-            SpawnHelper.spawn(world, worldChunk, info, spawnableGroups);
+            SpawnHelper.spawn(world, worldChunk, info, true, true, true);
         }
     }
 
@@ -223,7 +221,7 @@ public class ParallelProcessor {
     public static void crash(String message, Throwable throwable) {
         String errorMessage = message + throwable.getMessage();
         LOGGER.error(errorMessage, LogUtils.FATAL_MARKER);
-        CrashReport crashReport = createCrashReport("Watching Server", server.getThread().threadId());
+        CrashReport crashReport = CrashReport.create(throwable, message);
         server.addSystemDetails(crashReport.getSystemDetailsSection());
         CrashReportSection crashReportSection = crashReport.addElement("Performance stats");
         crashReportSection.add(
@@ -251,9 +249,9 @@ public class ParallelProcessor {
                         .map(world -> world.getRegistryKey().getValue() + ": " + world.getDebugString())
                         .collect(Collectors.joining(",\n"))
         );
-        Bootstrap.println("Crash report:\n" + crashReport.asString(ReportType.MINECRAFT_CRASH_REPORT));
-        Path path = server.getRunDirectory().resolve("crash-reports").resolve("crash-" + Util.getFormattedCurrentTime() + "-server.txt");
-        if (crashReport.writeToFile(path, ReportType.MINECRAFT_CRASH_REPORT)) {
+        Bootstrap.println("Crash report:\n" + crashReport.asString());
+        Path path = server.getRunDirectory().toPath().resolve("crash-reports").resolve("crash-" + Util.getFormattedCurrentTime() + "-server.txt");
+        if (crashReport.writeToFile(path.toFile())) {
             LOGGER.error("This crash report has been saved to: {}", path.toAbsolutePath());
         } else {
             LOGGER.error("We were unable to save this crash report to disk.");

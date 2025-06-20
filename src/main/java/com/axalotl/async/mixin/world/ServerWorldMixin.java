@@ -13,10 +13,9 @@ import net.minecraft.server.world.BlockEvent;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.profiler.Profiler;
-import net.minecraft.util.profiler.Profilers;
+import net.minecraft.util.profiler.DummyProfiler;
 import net.minecraft.world.*;
 import net.minecraft.world.dimension.DimensionType;
-import net.minecraft.world.tick.TickManager;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
@@ -39,8 +38,6 @@ public abstract class ServerWorldMixin extends World implements StructureWorldAc
     @Mutable
     Set<MobEntity> loadedMobs;
 
-    @Shadow
-    public abstract TickManager getTickManager();
 
     @Shadow
     @Final
@@ -50,7 +47,7 @@ public abstract class ServerWorldMixin extends World implements StructureWorldAc
     public abstract void tickEntity(Entity entity);
 
     protected ServerWorldMixin(MutableWorldProperties properties, RegistryKey<World> registryRef, DynamicRegistryManager registryManager, RegistryEntry<DimensionType> dimensionEntry, boolean isClient, boolean debugWorld, long seed, int maxChainedNeighborUpdates) {
-        super(properties, registryRef, registryManager, dimensionEntry, isClient, debugWorld, seed, maxChainedNeighborUpdates);
+        super(properties, registryRef, registryManager, dimensionEntry, () -> DummyProfiler.INSTANCE, isClient, debugWorld, seed, maxChainedNeighborUpdates);
     }
 
     @Inject(method = "<init>", at = @At("RETURN"))
@@ -61,27 +58,25 @@ public abstract class ServerWorldMixin extends World implements StructureWorldAc
 
     @Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/EntityList;forEach(Ljava/util/function/Consumer;)V"))
     private void overwriteEntityTicking(EntityList entityList, Consumer<Entity> action) {
-        Profiler profiler = Profilers.get();
+        Profiler profiler = this.getProfiler();
         entityList.forEach(entity -> {
             if (!entity.isRemoved()) {
-                if (!this.getTickManager().shouldSkipTick(entity)) {
-                    profiler.push("checkDespawn");
-                    entity.checkDespawn();
-                    profiler.pop();
-                    if (entity instanceof ServerPlayerEntity || this.chunkManager.chunkLoadingManager.getLevelManager().shouldTickEntities(entity.getChunkPos().toLong())) {
-                        Entity entity2 = entity.getVehicle();
-                        if (entity2 != null) {
-                            if (!entity2.isRemoved() && entity2.hasPassenger(entity)) {
-                                return;
-                            }
-
-                            entity.stopRiding();
+                profiler.push("checkDespawn");
+                entity.checkDespawn();
+                profiler.pop();
+                if (entity instanceof ServerPlayerEntity || this.chunkManager.threadedAnvilChunkStorage.getTicketManager().shouldTickEntities(entity.getChunkPos().toLong())) {
+                    Entity entity2 = entity.getVehicle();
+                    if (entity2 != null) {
+                        if (!entity2.isRemoved() && entity2.hasPassenger(entity)) {
+                            return;
                         }
 
-                        profiler.push("tick");
-                        ParallelProcessor.callEntityTick(this::tickEntity, entity);
-                        profiler.pop();
+                        entity.stopRiding();
                     }
+
+                    profiler.push("tick");
+                    ParallelProcessor.callEntityTick(this::tickEntity, entity);
+                    profiler.pop();
                 }
             }
         });
