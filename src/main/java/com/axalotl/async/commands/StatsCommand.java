@@ -186,11 +186,8 @@ public class StatsCommand {
             return;
         }
 
-        int active = ParallelProcessor.getActiveThreadCount();
-        if (active < 0) {
-            active = ParallelProcessor.currentEntities.get();
-        }
-        threadSamples.offer(active);
+        int currentThreads = ParallelProcessor.currentEntities.get();
+        threadSamples.offer(currentThreads);
 
         while (threadSamples.size() > MAX_SAMPLES) {
             threadSamples.poll();
