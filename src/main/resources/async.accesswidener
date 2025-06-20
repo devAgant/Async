@@ -1,5 +1,6 @@
 accessWidener	v1	named
 accessible field net/minecraft/server/world/ServerChunkManager mainThreadExecutor Lnet/minecraft/server/world/ServerChunkManager$MainThreadExecutor;
+accessible field net/minecraft/server/world/ThreadedAnvilChunkStorage entityTrackers Lit/unimi/dsi/fastutil/ints/Int2ObjectMap;
 accessible field net/minecraft/world/chunk/WorldChunk$WrappedBlockEntityTickInvoker wrapped Lnet/minecraft/world/chunk/BlockEntityTickInvoker;
 accessible field net/minecraft/world/chunk/WorldChunk$DirectBlockEntityTickInvoker blockEntity Lnet/minecraft/block/entity/BlockEntity;
 accessible method net/minecraft/server/world/ServerWorld processBlockEvent (Lnet/minecraft/server/world/BlockEvent;)Z

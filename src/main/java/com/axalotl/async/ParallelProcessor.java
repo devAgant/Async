@@ -148,7 +148,7 @@ public class ParallelProcessor {
         }
     }
 
-    public static void asyncSpawn(ServerWorld world, WorldChunk worldChunk, SpawnHelper.Info info, List<SpawnGroup> spawnableGroups) {
+    public static void asyncSpawn(ServerWorld world, WorldChunk worldChunk, SpawnHelper.Info info) {
         if (AsyncConfig.enableAsyncSpawn) {
             CompletableFuture<Void> future = CompletableFuture.runAsync(() ->
                     SpawnHelper.spawn(world, worldChunk, info, true, true, true), tickPool
