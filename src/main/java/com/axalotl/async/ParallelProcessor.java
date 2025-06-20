@@ -48,6 +48,26 @@ public class ParallelProcessor {
             FallingBlockEntity.class
     );
 
+    /**
+     * Returns the ExecutorService used for entity ticking.
+     */
+    public static ExecutorService getTickPool() {
+        return tickPool;
+    }
+
+    /**
+     * Retrieves the number of active worker threads currently executing
+     * entity tasks.
+     */
+    public static int getActiveThreadCount() {
+        if (tickPool instanceof ForkJoinPool pool) {
+            return pool.getActiveThreadCount();
+        } else if (tickPool instanceof ThreadPoolExecutor tpe) {
+            return tpe.getActiveCount();
+        }
+        return -1;
+    }
+
     public static void setupThreadPool(int parallelism) {
         ForkJoinPool.ForkJoinWorkerThreadFactory threadFactory = pool -> {
             ForkJoinWorkerThread worker = ForkJoinPool.defaultForkJoinWorkerThreadFactory.newThread(pool);
