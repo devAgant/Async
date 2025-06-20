@@ -32,17 +32,15 @@ public abstract class ServerChunkManagerMixin extends ChunkManager {
 
     @Shadow
     @Final
-    public ServerChunkLoadingManager chunkLoadingManager;
+    public ThreadedAnvilChunkStorage threadedAnvilChunkStorage;
 
     @Inject(method = "getChunk(IILnet/minecraft/world/chunk/ChunkStatus;Z)Lnet/minecraft/world/chunk/Chunk;", at = @At("HEAD"), cancellable = true)
-    private void shortcutGetChunk(int x, int z, ChunkStatus leastStatus, boolean create, CallbackInfoReturnable<Chunk> cir) {
+    private void shortcutGetChunk(int x, int z, ChunkStatus status, boolean create, CallbackInfoReturnable<Chunk> cir) {
         if (Thread.currentThread() != this.serverThread) {
-            final ChunkHolder holder = this.getChunkHolder(ChunkPos.toLong(x, z));
+            ChunkHolder holder = this.getChunkHolder(ChunkPos.toLong(x, z));
             if (holder != null) {
-                final CompletableFuture<OptionalChunk<Chunk>> future = holder.load(leastStatus, this.chunkLoadingManager);
-                Chunk chunk = future.getNow(ChunkHolder.UNLOADED).orElse(null);
-                if (chunk instanceof WrapperProtoChunk readOnlyChunk) chunk = readOnlyChunk.getWrappedChunk();
-                if (chunk != null) {
+                Chunk chunk = holder.getWorldChunk();
+                if (chunk != null && chunk.getStatus().isAtLeast(status)) {
                     cir.setReturnValue(chunk);
                     return;
                 }
@@ -53,21 +51,20 @@ public abstract class ServerChunkManagerMixin extends ChunkManager {
     @Inject(method = "getWorldChunk", at = @At("HEAD"), cancellable = true)
     private void shortcutGetWorldChunk(int chunkX, int chunkZ, CallbackInfoReturnable<WorldChunk> cir) {
         if (Thread.currentThread() != this.serverThread) {
-            final ChunkHolder holder = this.getChunkHolder(ChunkPos.toLong(chunkX, chunkZ));
+            ChunkHolder holder = this.getChunkHolder(ChunkPos.toLong(chunkX, chunkZ));
             if (holder != null) {
-                final CompletableFuture<OptionalChunk<Chunk>> future = holder.load(ChunkStatus.FULL, this.chunkLoadingManager);
-                Chunk chunk = future.getNow(ChunkHolder.UNLOADED).orElse(null);
-                if (chunk instanceof WorldChunk worldChunk) {
-                    cir.setReturnValue(worldChunk);
+                WorldChunk chunk = holder.getWorldChunk();
+                if (chunk != null) {
+                    cir.setReturnValue(chunk);
                     return;
                 }
             }
         }
     }
 
-    @Redirect(method = "tickSpawningChunk", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/SpawnHelper;spawn(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/world/chunk/WorldChunk;Lnet/minecraft/world/SpawnHelper$Info;Ljava/util/List;)V"))
-    private void tickChunks(ServerWorld world, WorldChunk worldChunk, SpawnHelper.Info info, List<SpawnGroup> spawnableGroups) {
-        ParallelProcessor.asyncSpawn(world, worldChunk, info, spawnableGroups);
+    @Redirect(method = "tickChunks", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/SpawnHelper;spawn(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/world/chunk/WorldChunk;Lnet/minecraft/world/SpawnHelper$Info;ZZZ)V"))
+    private void tickChunks(ServerWorld world, WorldChunk worldChunk, SpawnHelper.Info info, boolean bl, boolean bl2, boolean bl3) {
+        ParallelProcessor.asyncSpawn(world, worldChunk, info);
     }
 
     @WrapMethod(method = "putInCache")

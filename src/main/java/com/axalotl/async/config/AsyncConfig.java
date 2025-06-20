@@ -28,9 +28,9 @@ public class AsyncConfig {
     public static boolean enableEntityMoveSync = false;
     public static boolean enableAsyncSpawn = false;
     public static Set<Identifier> synchronizedEntities = new HashSet<>(Set.of(
-            Identifier.ofVanilla("tnt"),
-            Identifier.ofVanilla("item"),
-            Identifier.ofVanilla("experience_orb")
+            new Identifier("minecraft", "tnt"),
+            new Identifier("minecraft", "item"),
+            new Identifier("minecraft", "experience_orb")
     ));
 
     public static void init() {
@@ -91,9 +91,9 @@ public class AsyncConfig {
                 }
             }
         }, () -> synchronizedEntities = new HashSet<>(Set.of(
-                Identifier.ofVanilla("tnt"),
-                Identifier.ofVanilla("item"),
-                Identifier.ofVanilla("experience_orb"))));
+                new Identifier("minecraft", "tnt"),
+                new Identifier("minecraft", "item"),
+                new Identifier("minecraft", "experience_orb"))));
 
         Set<String> keysToRemove = new HashSet<>();
         for (CommentedConfig.Entry entry : CONFIG.entrySet()) {
@@ -117,9 +117,9 @@ public class AsyncConfig {
         enableEntityMoveSync = false;
         enableAsyncSpawn = false;
         synchronizedEntities = new HashSet<>(Set.of(
-                Identifier.ofVanilla("tnt"),
-                Identifier.ofVanilla("item"),
-                Identifier.ofVanilla("experience_orb")
+                new Identifier("minecraft", "tnt"),
+                new Identifier("minecraft", "item"),
+                new Identifier("minecraft", "experience_orb")
         ));
     }
 

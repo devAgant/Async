@@ -33,27 +33,6 @@ public abstract class EntityMixin {
         }
     }
 
-    @WrapMethod(method = "tickBlockCollision()V")
-    private void tickBlockCollision(Operation<Void> original) {
-        if (AsyncConfig.enableEntityMoveSync) {
-            synchronized (lock) {
-                original.call();
-            }
-        } else {
-            original.call();
-        }
-    }
-
-    @WrapMethod(method = "tickBlockCollision(Lnet/minecraft/util/math/Vec3d;Lnet/minecraft/util/math/Vec3d;)V")
-    private void tickBlockCollision(Vec3d lastRenderPos, Vec3d pos, Operation<Void> original) {
-        if (AsyncConfig.enableEntityMoveSync) {
-            synchronized (lock) {
-                original.call(lastRenderPos, pos);
-            }
-        } else {
-            original.call(lastRenderPos, pos);
-        }
-    }
 
     @WrapMethod(method = "setRemoved")
     private void setRemoved(Entity.RemovalReason reason, Operation<Void> original) {
@@ -62,17 +41,17 @@ public abstract class EntityMixin {
         }
     }
 
-    @WrapMethod(method = "dropStack(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/item/ItemStack;F)Lnet/minecraft/entity/ItemEntity;")
-    private ItemEntity dropStack(ServerWorld world, ItemStack stack, float yOffset, Operation<ItemEntity> original) {
+    @WrapMethod(method = "dropStack(Lnet/minecraft/item/ItemStack;F)Lnet/minecraft/entity/ItemEntity;")
+    private ItemEntity dropStack(ItemStack stack, float yOffset, Operation<ItemEntity> original) {
         synchronized (lock) {
-            return original.call(world, stack, yOffset);
+            return original.call(stack, yOffset);
         }
     }
 
-    @WrapMethod(method = "dropItem(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/item/ItemConvertible;I)Lnet/minecraft/entity/ItemEntity;")
-    private ItemEntity dropStack(ServerWorld world, ItemConvertible item, int offsetY, Operation<ItemEntity> original) {
+    @WrapMethod(method = "dropItem(Lnet/minecraft/item/ItemConvertible;I)Lnet/minecraft/entity/ItemEntity;")
+    private ItemEntity dropStack(ItemConvertible item, int offsetY, Operation<ItemEntity> original) {
         synchronized (lock) {
-            return original.call(world, item, offsetY);
+            return original.call(item, offsetY);
         }
     }
 

@@ -1,6 +1,7 @@
 package com.axalotl.async.parallelised;
 
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -22,6 +23,16 @@ public class ConcurrentCollections {
      */
     public static <T> Set<T> newHashSet() {
         return Collections.newSetFromMap(new ConcurrentHashMap<>());
+    }
+
+    /**
+     * Creates a new thread-safe LinkedHashSet preserving insertion order.
+     *
+     * @param <T> the type of elements maintained by this set
+     * @return a synchronized LinkedHashSet
+     */
+    public static <T> Set<T> newLinkedSet() {
+        return Collections.synchronizedSet(new LinkedHashSet<>());
     }
 
     /**

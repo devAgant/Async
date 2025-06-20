@@ -31,31 +31,31 @@ public abstract class WorldMixin implements WorldAccess, AutoCloseable {
         return this.thread;
     }
 
-    @WrapMethod(method = "createExplosion(Lnet/minecraft/entity/Entity;DDDFLnet/minecraft/world/World$ExplosionSourceType;)V")
-    private void createExplosion(Entity entity, double x, double y, double z, float power, World.ExplosionSourceType explosionSourceType, Operation<Void> original) {
+    @WrapMethod(method = "createExplosion(Lnet/minecraft/entity/Entity;DDDFLnet/minecraft/world/World$ExplosionSourceType;)Lnet/minecraft/world/explosion/Explosion;")
+    private net.minecraft.world.explosion.Explosion createExplosion(Entity entity, double x, double y, double z, float power, World.ExplosionSourceType explosionSourceType, Operation<net.minecraft.world.explosion.Explosion> original) {
         synchronized (lock) {
-            original.call(entity, x, y, z, power, explosionSourceType);
+            return original.call(entity, x, y, z, power, explosionSourceType);
         }
     }
 
-    @WrapMethod(method = "createExplosion(Lnet/minecraft/entity/Entity;Lnet/minecraft/entity/damage/DamageSource;Lnet/minecraft/world/explosion/ExplosionBehavior;DDDFZLnet/minecraft/world/World$ExplosionSourceType;)V")
-    private void createExplosion(Entity entity, DamageSource damageSource, ExplosionBehavior behavior, double x, double y, double z, float power, boolean createFire, World.ExplosionSourceType explosionSourceType, Operation<Void> original) {
+    @WrapMethod(method = "createExplosion(Lnet/minecraft/entity/Entity;Lnet/minecraft/entity/damage/DamageSource;Lnet/minecraft/world/explosion/ExplosionBehavior;DDDFZLnet/minecraft/world/World$ExplosionSourceType;)Lnet/minecraft/world/explosion/Explosion;")
+    private net.minecraft.world.explosion.Explosion createExplosion(Entity entity, DamageSource damageSource, ExplosionBehavior behavior, double x, double y, double z, float power, boolean createFire, World.ExplosionSourceType explosionSourceType, Operation<net.minecraft.world.explosion.Explosion> original) {
         synchronized (lock) {
-            original.call(entity, damageSource, behavior, x, y, z, power, createFire, explosionSourceType);
+            return original.call(entity, damageSource, behavior, x, y, z, power, createFire, explosionSourceType);
         }
     }
 
-    @WrapMethod(method = "createExplosion(Lnet/minecraft/entity/Entity;DDDFZLnet/minecraft/world/World$ExplosionSourceType;)V")
-    private void createExplosion(Entity entity, double x, double y, double z, float power, boolean createFire, World.ExplosionSourceType explosionSourceType, Operation<Void> original) {
+    @WrapMethod(method = "createExplosion(Lnet/minecraft/entity/Entity;DDDFZLnet/minecraft/world/World$ExplosionSourceType;)Lnet/minecraft/world/explosion/Explosion;")
+    private net.minecraft.world.explosion.Explosion createExplosion(Entity entity, double x, double y, double z, float power, boolean createFire, World.ExplosionSourceType explosionSourceType, Operation<net.minecraft.world.explosion.Explosion> original) {
         synchronized (lock) {
-            original.call(entity, x, y, z, power, createFire, explosionSourceType);
+            return original.call(entity, x, y, z, power, createFire, explosionSourceType);
         }
     }
 
-    @WrapMethod(method = "createExplosion(Lnet/minecraft/entity/Entity;Lnet/minecraft/entity/damage/DamageSource;Lnet/minecraft/world/explosion/ExplosionBehavior;Lnet/minecraft/util/math/Vec3d;FZLnet/minecraft/world/World$ExplosionSourceType;)V")
-    private void createExplosion(Entity entity, DamageSource damageSource, ExplosionBehavior behavior, Vec3d pos, float power, boolean createFire, World.ExplosionSourceType explosionSourceType, Operation<Void> original) {
+    @WrapMethod(method = "createExplosion(Lnet/minecraft/entity/Entity;Lnet/minecraft/entity/damage/DamageSource;Lnet/minecraft/world/explosion/ExplosionBehavior;Lnet/minecraft/util/math/Vec3d;FZLnet/minecraft/world/World$ExplosionSourceType;)Lnet/minecraft/world/explosion/Explosion;")
+    private net.minecraft.world.explosion.Explosion createExplosion(Entity entity, DamageSource damageSource, ExplosionBehavior behavior, Vec3d pos, float power, boolean createFire, World.ExplosionSourceType explosionSourceType, Operation<net.minecraft.world.explosion.Explosion> original) {
         synchronized (lock) {
-            original.call(entity, damageSource, behavior, pos, power, createFire, explosionSourceType);
+            return original.call(entity, damageSource, behavior, pos, power, createFire, explosionSourceType);
         }
     }
 }
