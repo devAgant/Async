@@ -206,6 +206,7 @@ public class ParallelProcessor {
                 });
             }
 
+            server.runTasks(allTasks::isDone);
             server.getWorlds().forEach(world -> {
                 world.getChunkManager().executeQueuedTasks();
                 world.getChunkManager().mainThreadExecutor.runTasks(allTasks::isDone);
