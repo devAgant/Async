@@ -42,8 +42,11 @@ public abstract class ServerChunkManagerMixin extends ChunkManager {
                 Chunk chunk = holder.getWorldChunk();
                 if (chunk != null && chunk.getStatus().isAtLeast(status)) {
                     cir.setReturnValue(chunk);
-                    return;
+                } else {
+                    cir.setReturnValue(null);
                 }
+            } else {
+                cir.setReturnValue(null);
             }
         }
     }
@@ -56,8 +59,11 @@ public abstract class ServerChunkManagerMixin extends ChunkManager {
                 WorldChunk chunk = holder.getWorldChunk();
                 if (chunk != null) {
                     cir.setReturnValue(chunk);
-                    return;
+                } else {
+                    cir.setReturnValue(null);
                 }
+            } else {
+                cir.setReturnValue(null);
             }
         }
     }
