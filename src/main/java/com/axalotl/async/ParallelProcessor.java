@@ -8,7 +8,6 @@ import lombok.Setter;
 import net.minecraft.Bootstrap;
 import net.minecraft.entity.*;
 import net.minecraft.entity.projectile.ProjectileEntity;
-import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.vehicle.*;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.dedicated.MinecraftDedicatedServer;
@@ -105,7 +104,6 @@ public class ParallelProcessor {
                 entity instanceof ProjectileEntity ||
                 entity instanceof AbstractMinecartEntity ||
                 entity instanceof ServerPlayerEntity ||
-                entity instanceof MobEntity ||
                 specialEntities.contains(entity.getClass()) ||
                 blacklistedEntity.contains(entityId) ||
                 AsyncConfig.synchronizedEntities.contains(EntityType.getId(entity.getType())) ||
